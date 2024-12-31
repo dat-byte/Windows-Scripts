@@ -37,8 +37,9 @@ function Create-LogOnTaskScheduler
     {
         Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
     }
-
-    $action = New-ScheduledTaskAction -Execute "powershell.exe"` "-NoProfile -ExecutionPolicy Bypass -Command -File `"$ScriptPath`""
+    
+    ## Debug: .\PsExec.exe -i -s powershell.exe -NoProfile -ExecutionPolicy Bypass
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -Command ""& { & '$ScriptPath'; Start-Sleep -Seconds 10 }"""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount
 
