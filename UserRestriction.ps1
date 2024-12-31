@@ -50,5 +50,11 @@ function Hide-PrivacyAndLocationSettingsPage
     Set-ItemProperty -Path $regPath -Name "SettingsPageVisibility" -Value "hide:privacy-location"
 }
 
+function Prevent-UserFromResettingPc
+{
+    Start-Process "reagentc.exe" -ArgumentList "/disable" -Verb RunAs -Wait
+}
+
 Deny-PowerShellAndCommandPromptToCurrentUser
 Hide-PrivacyAndLocationSettingsPage
+Prevent-UserFromResettingPc
