@@ -44,17 +44,59 @@ function Deny-PowerShellAndCommandPromptToCurrentUser
     }   
 }
 
-function Hide-PrivacyAndLocationSettingsPage
+function Change-LocationValueAndSettingsPageVisibility
 {
-    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-    Set-ItemProperty -Path $regPath -Name "SettingsPageVisibility" -Value "hide:privacy-location"
+    #$regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    #Set-ItemProperty -Path $regPath -Name "SettingsPageVisibility" -Value "hide:privacy-location"
+
+    $locationService = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value"
+    if ($locationService.Value -eq 0) 
+    {
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Value 1
+        Write-Host "Turned on location services"
+    }
 }
 
 function Prevent-UserFromResettingPc
 {
     Start-Process "reagentc.exe" -ArgumentList "/disable" -Verb RunAs -Wait
+    
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regValue = "HideAdvancedStartup"
+
+    if (-not (Test-Path $regPath)) 
+    {
+        New-Item -Path $regPath -Force
+    }
+
+    Set-ItemProperty -Path $regPath -Name $regValue -Value 1
+    Write-Host "Advanced startup has been disabled." -Foreground Green
+
+
+    $gpPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Recovery"
+    $gpValue = "AllowAdvancedStartup"
+
+    if (-not (Test-Path $gpPath))
+    {
+        New-Item -Path $gpPath -Force
+    }
+
+    Set-ItemProperty -Path $gpPath -Name $gpValue -Value 0
+    Write-Host "Advanced Startup has been blocked by Group Policy." -ForegroundColor Green
+
+
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regValue = "DisableBootMenu"
+
+    if (-not (Test-Path $regPath)) 
+    {
+        New-Item -Path $regPath -Force
+    }
+
+    Set-ItemProperty -Path $regPath -Name $regValue -Value 1
+    Write-Host "Boot Menu has been disabled." -ForegroundColor Green
 }
 
-Deny-PowerShellAndCommandPromptToCurrentUser
-Hide-PrivacyAndLocationSettingsPage
-Prevent-UserFromResettingPc
+#Deny-PowerShellAndCommandPromptToCurrentUser
+#Hide-PrivacyAndLocationSettingsPage
+#Prevent-UserFromResettingPc
