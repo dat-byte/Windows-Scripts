@@ -44,5 +44,11 @@ function Deny-PowerShellAndCommandPromptToCurrentUser
     }   
 }
 
+function Hide-PrivacyAndLocationSettingsPage
+{
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    Set-ItemProperty -Path $regPath -Name "SettingsPageVisibility" -Value "hide:privacy-location"
+}
 
 Deny-PowerShellAndCommandPromptToCurrentUser
+Hide-PrivacyAndLocationSettingsPage
