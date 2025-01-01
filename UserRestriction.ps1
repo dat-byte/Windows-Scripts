@@ -46,15 +46,9 @@ function Deny-PowerShellAndCommandPromptToCurrentUser
 
 function Change-LocationValueAndSettingsPageVisibility
 {
-    #$regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-    #Set-ItemProperty -Path $regPath -Name "SettingsPageVisibility" -Value "hide:privacy-location"
-
-    $locationService = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value"
-    if ($locationService.Value -eq 0) 
-    {
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Value 1
-        Write-Host "Turned on location services"
-    }
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    Set-ItemProperty -Path $regPath -Name "SettingsPageVisibility" -Value "hide:privacy-location"
+    reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy /v LetAppsAccessLocation /t REG_DWORD /d 1 /f
 }
 
 function Prevent-UserFromResettingPc
@@ -97,6 +91,11 @@ function Prevent-UserFromResettingPc
     Write-Host "Boot Menu has been disabled." -ForegroundColor Green
 }
 
-#Deny-PowerShellAndCommandPromptToCurrentUser
-#Hide-PrivacyAndLocationSettingsPage
-#Prevent-UserFromResettingPc
+Deny-PowerShellAndCommandPromptToCurrentUser
+Change-LocationValueAndSettingsPageVisibility
+Prevent-UserFromResettingPc
+
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$folderPath = Join-Path -Path $scriptRoot -ChildPath $timestamp
+New-Item -Path $folderPath -ItemType Directory | Out-Null
