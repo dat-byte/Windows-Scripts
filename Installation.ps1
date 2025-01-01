@@ -140,16 +140,12 @@ function Sign-Packages
      {
         try 
         {
-            Write-Host "Signing File: $Item"
-            Write-Host "Certificate File Path: $CertFileName"
-
             Start-Process -FilePath $SignToolPath -ArgumentList @(
                 "sign",
                 "/f $CertFileName",
                 "/fd sha256",
                 "$Item"
             ) -NoNewWindow -Wait | Out-Null
-
         } 
         catch 
         {
@@ -168,10 +164,8 @@ function Install-PresteetoPcPackage
         [Parameter(Mandatory = $true)]
         [string]$CertificatePath
     )
-    Write-Host "Msix File Location: $MsixFileLocation"
-    Write-Host "Certificate Path: $CertificatePath"
-
     Add-AppxPackage -Path $MsixFileLocation
+    Write-Host "Installed PresteetoPc Software :)" -ForegroundColor Green
 }
 
 
@@ -253,7 +247,7 @@ function Install-PresteetoPcSoftware
         [string]$MsixFileName,
         [string] $ZipFilePath
     )
-    <#
+    
     Copy-ZipFileToCDrive -ZipFilePath $ZipFilePath
     Create-CertificateFile  -Subject $Subject -CertLocation "cert:\CurrentUser\My" -PackagePath $PackagePath    
     
@@ -267,13 +261,14 @@ function Install-PresteetoPcSoftware
     $user = Get-CurrentUser
     Sign-Packages -Item $Item -CertFileName "C:\Users\$user\Documents\PresteetoPc_LocationTracker\PresteetoPc.cer" -Password $Password
     Install-PresteetoPcPackage -MsixFileLocation $Item -CertificatePath "C:\Users\$user\Documents\PresteetoPc_LocationTracker\PresteetoPc.cer"
-    #>
+    
 
     $UserRestrictionScriptDirectory = "C:\Windows\PresteetoPc\"
     Copy-FileToPath -SourcePath "${PSScriptRoot}UserRestriction.ps1" -DestinationPath $UserRestrictionScriptDirectory
     Create-LogOnTaskScheduler -ScriptPath "${UserRestrictionScriptDirectory}\UserRestriction.ps1" -TaskName "PresteetoPC Microsoft Software"
     
-    #$CustomerName = Create-CustomerAccount
+    $CustomerName = Create-CustomerAccount
+    
     # Step 8) Create a task to run the UWP tracking software - LEE
     # TODO: Create a task action to run UWP tracking software
 }
@@ -288,3 +283,14 @@ $commands = @{
 
 
 Install-PresteetoPcSoftware @commands
+
+<#
+    * Things to do:
+        * Create TaskScheduler for UWP App
+        * Powershell call to run UWP App
+        * UnRestrictComputer script - script to undo any restrictions or tracking software installed
+            - [x] Location and Location Visibility Page in Settings 
+            - [x] PowerShell and Command Prompt Exectuables 
+            - [x] Deletion of Task Scheduler Actions
+            - [x] Enabling of Resetting Pc
+#>
